@@ -1,49 +1,77 @@
-ChatRec_Model - Conversational Response Prediction System
-==========================================================
+ChatRec_Model — Conversational Response Prediction System
+=========================================================
 
-This project implements an offline GPT-2 Transformer model to predict User A's next reply based on conversational context.
+Overview
+--------
+ChatRec_Model is an offline GPT-2–based system designed to predict a user’s next conversational reply from previous dialogue context.  
+It demonstrates how a transformer-based model can be fine-tuned and deployed for conversational response generation in lightweight environments.
 
 ----------------------------------------------------------
 Directory Structure
 ----------------------------------------------------------
 ChatRec_Model/
-│── ChatRec_Model.ipynb      : Jupyter notebook containing code execution
-│── Report.pdf               : Technical report summarizing model design & evaluation
-│── Model.joblib             : Serialized fine-tuned GPT-2 model and tokenizer
-│── ReadMe.txt               : Documentation file (this one)
+│── ChatRec_Model.ipynb      — Jupyter notebook with preprocessing, training, and evaluation steps  
+│── final_model/             — Saved Hugging Face model files after training  
+│── Model.joblib             — Serialized version of the fine-tuned GPT-2 model and tokenizer  
+│── Report.pdf               — Technical report summarizing architecture, results, and analysis  
+│── ReadMe.txt               — This documentation file  
 
 ----------------------------------------------------------
 Steps to Run
 ----------------------------------------------------------
-1. Install dependencies:
-   pip install torch transformers datasets nltk rouge-score sacrebleu pandas scikit-learn joblib tqdm
+1. **Install all dependencies**  
+   Run the following command in your terminal or Anaconda Prompt:
 
-2. Place your conversation dataset (conversationfile.xlsx or .csv) in the working directory.
+2. **Add your conversation dataset**  
+Place your dataset (e.g., `conversationfile.csv` or `.xlsx`) in the same directory as the notebook.
 
-3. Run ChatRec_Model.ipynb to preprocess, train, and evaluate the model.
-
-4. After training:
-   - The model will be saved as ./final_model/ (Hugging Face format)
-   - It will also be serialized as ChatRec_Model/Model.joblib
-
-----------------------------------------------------------
-Evaluation Summary
-----------------------------------------------------------
-BLEU Score : 0.0102
-ROUGE-1    : 0.1500
-ROUGE-2    : 0.0000
-ROUGE-L    : 0.1000
-Perplexity : 53.9670
+3. **Run the notebook**  
+Open and execute `ChatRec_Model.ipynb` step-by-step in Jupyter Notebook or Google Colab.  
+The notebook will:
+- Preprocess and clean your dataset  
+- Fine-tune the GPT-2 model  
+- Evaluate using BLEU, ROUGE, and Perplexity metrics  
+- Save outputs both as a Hugging Face model and a serialized `.joblib` file  
 
 ----------------------------------------------------------
-Model Justification
+Model Access
 ----------------------------------------------------------
-Model  : GPT-2 (autoregressive Transformer)
-Reason : Efficient for small datasets, capable of context-aware text generation.
-Deployment : Joblib serialization allows fast loading in production (Flask/FastAPI).
+You can directly download the serialized fine-tuned model here:  
+👉 **Model.joblib (Google Drive Link)**  
+https://drive.google.com/file/d/1fT0YOlEB9pKVD5dTh5VPZZ8m2U0PLmvQ/view?usp=sharing  
+
+> Note: You may need to sign in or request access depending on sharing permissions.
 
 ----------------------------------------------------------
-Author's Note
+How to Open and Inspect the `.joblib` File
 ----------------------------------------------------------
-This model serves as a prototype. For production, train with more data and consider
-larger models (GPT-2 Medium, T5, or Longformer) for better context understanding.
+To load and explore the serialized model and tokenizer, follow these steps:
+
+```python
+import joblib
+
+# Path to the downloaded .joblib file
+model_path = "Model.joblib"
+
+# Load the object
+obj = joblib.load(model_path)
+
+# Identify model and tokenizer
+if isinstance(obj, dict):
+ model = obj.get("model")
+ tokenizer = obj.get("tokenizer")
+elif hasattr(obj, "model") and hasattr(obj, "tokenizer"):
+ model = obj.model
+ tokenizer = obj.tokenizer
+else:
+ print("Unknown structure:", type(obj))
+ print(obj)
+ raise ValueError("Unexpected format in .joblib file")
+
+# Test a prediction
+text = "Hello, how are you?"
+inputs = tokenizer(text, return_tensors="pt")
+outputs = model.generate(**inputs, max_length=50)
+reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+print("Generated reply:", reply)
